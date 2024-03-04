@@ -1,0 +1,9 @@
+1. Un usuario en su casa quiere consultar una canción. Hace una petición http (de tipo get para consultar) en su navigador. Por ejemplo, 'myapp.com/track/546'.
+Esa petición llega a index.js.
+
+2. index.js busca la ruta que corresponde a la petición y lo deriva a track.routes.js.
+
+3. track.routes.js analiza el tipo de petición. [isAuth] verifica que el usuario puede pedir eso y trackroutes.js lo envia a track.controller.js.
+
+4. track.controller.js se conecta a mongodb para extraer los datos que ha pedido el usuario.
+Después, track.controller.js hace una petición http de vuelta al usuario en la que le devuelve los datos que ha pedido.
