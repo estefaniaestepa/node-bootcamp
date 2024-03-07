@@ -1,0 +1,12 @@
+usuario quiere ver una cancion
+
+usuario >>>> peticion http >>>> index.js
+
+index.js busca la ruta que corresponde >>>>> track.routes.js
+
+track.routes.js analiza tipo de peticion >>>>>> [isAuth verifica que el user puede pedir eso] >>>>>> track.controller.js
+
+track.controller.js  >>>>> se conecta a mongodb para extraer los datos que ha pedido usuario
+
+track.controller.js >>>>> peticion http >>>>> usuario --- en la que le devuelve los datos que ha pedido
+
