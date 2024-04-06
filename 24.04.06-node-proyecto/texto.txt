@@ -1,0 +1,288 @@
+NODE
+
+-------------------------------------------------------------------------------
+
+1.ABRIMOS TERMINAL Y PONEMOS EL SIGUIENTE COMANDO
+npm init (le damos a enter todo el rato)
+
+-nos crea un archivo package.json
+DENTRO DE ESTA CARPETA CAMBIAMOS ESTA LINEA     "test": "echo \"Error: no test specified\" && exit 1"
+POR LA SIGUIENTE  "dev": "nodemon index.js"
+
+-------------------------------------------------------------------------------
+
+2. PONEMOS LOS SIGUIENTES COMANDOS EN LA TERMINAL
+npm i express nodemon dotenv mongoose
+
+-------------------------------------------------------------------------------
+
+3.CREAMOS ARCHIVOS
+-index.js (archivo)
+-api (carpeta)
+  *characters (carpeta) y los siguientes archivos:
+      .character.model.js
+      .character.router.js
+      .character.controller.js
+-.env(archivo) Y ESCRIBIMOS PORT=3000
+-.gitignore (archivo) Y ESCTIBIMOS LO SIGUIENTE
+  .env                (LLEVA NUESTRA LLAVE)
+  package-lock.json   (ESTO ES COMO TRADUCE NODE ESTE ARCHIVO A ALGO QUE PARA EL SEA MAS ACCESIBLE, DEPENDE DE NODE MODULES)
+  /node_modules       (ES NUESTRO LOCAL, NO SE TOCA NADA EN ESTE ARCHIVO)
+  /test
+
+-------------------------------------------------------------------------------
+
+4.INDEX.JS
+//1.IMPORTS ->NPM(LIBRERIA); MODULOS PROPIOS
+const express = require("express"); UTILIZAMOS REQUIRE EN NODE PARA IMPORTAR LOS ARCHIVOS
+require ('dotenv').config();   
+console.log(process.env);    AQUI IMPRIMIMOS POR PANTALLA LAS VARIABLES DE ENTORNO process.env LAS VARIABLES QUE FUNCIONAN EN UN SEGUNDO PLANO
+PONEMOS EN LA CONSOLA
+npm run dev
+
+AQUI NOS APARECE UN LISTADO CON TODAS LAS VARIABLES, LAS VARIABLES DE SISTEMA SOLO ESTAN ACCESIBLES SI ESTAS EN EL SISTEMA
+
+-cerramos la ejecución con control C
+
+//2.CONFIGURACION 
+//MI API VA A UTILIZAR FORMATO JSON, Y VA A PERMITIR CIERTO TIPO DE CONEXIONES
+const PORT = process.env.PORT || 3000;  //QUE SE CONECTE EN LA VARIABLES DE ENTORNO.ENV SI NO LO ENCUENTRA EN EL PUERTO 300
+const app = express();
+app.use(express.json()); //EJECUTAR EXPRESS 
+app.use(express.urlencoded({ extended: true })); //QUE PROCESE LA CODIFICACION URL
+app.use((req, res, next) => {   //SON LAS REGLAS DE CABECERA
+res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, PATCH");  //PUT: COGE EL OBJETO NUEVO Y SE CARGA EL ANTERIOR Y ASIGNA LA ID AL NUEVO// PATCH: SOLO LO MODIFICA PARCIALMENTE
+res.header("Access-Control-Allow-Credentials", true);
+res.header("Access-Control-Allow-Headers", "Content-Type");  //ESTO ES PARA CUANDO ENVIAMOS ARCHIVOS
+next();
+});
+
+
+//3.ENDPOINTS (SON LAS RUTAS, ES COMO UN LINK QUE TE LLEVA A UN SITIO QUE ESCRIBE SU USUARIO EN SU NAVEGADOR)
+
+app.get('/', (req, res)=>{  //1.la ruta del endpoint, 2.controlador
+ res.json({message: "El servidor esta funcionando"}); //ponemos unas llaves porque nos tiene que devolver un objeto
+});
+
+//4. GESTION DE ERRORES O MANEJO DE EXPEPCIONES
+
+
+//5.ACTIVAR (es la funcion lisen)
+
+app.listen(PORT,  ()=>{
+console.log(`El servidor se ha iniciado en el puerto: ${PORT}`);
+});
+
+PONEMOS EN LA TERMINAL 
+npm run dev
+
+-ponemos en crome localhost:3000
+una vez comprobado ininterrumpimos el proceso en la termina
+
+-------------------------------------------------------------------------------
+5.CHARACTER.model
+const { Aggregate } = require("mongoose");
+const mongoose = require("moongose");  //es una libreria de node que te permite
+
+const characterSchema = new mongoose.Schema({  //este modelo no es el definitivo
+  name: {type: String, required: true, trim: true, unique: true}, //el unico para metro obligado es type
+  age: {type: Number},
+  weigth: {type: Number},
+  description: {type: String, required: true}  //quitamos el trim porque son parrafos, si decimos que limpie por espacios por saltos de linea es mejor quitarlos
+});
+
+const Character = mongoose.model('Character', characterSchema); //le decimos que convierta el schema en un modelo que pueda procesar
+
+module.exports = Character;  //ponemos en nombre en mayuscula porque son modelos o clases, para diferenciar que son entidades abstractas
+
+UNA VEZ DEFINIMOS EL TIPO DE OBJETO QUE ESTAMOS TRABAJANDO NOS VAMOS AL CONTROLADOR
+
+-------------------------------------------------------------------------------
+
+6.CHARACTER.controller
+const Character = require("./character.model");
+
+
+//FUNCIONES CRUD
+//1.CREATE CREAMOS LA FUNCION PARA CREAR COSAS
+
+const create = async(req, res, next) =>{  //next si se produce un error se deriva a otra funcion que gestiona errores
+   try { //para crear un personaje nuevo
+     const character = await Character.create(req.body); //el cliente nos pasa la informacion a traves del body . Lo de req.body es lo que ponemos en postman
+      res.json({
+      status: 201, //creado
+      msg: "creado",
+      data: character,
+    });
+    } catch (error) {
+    next(error); //si se produce un error lo mandamos para fuera, este error lo deriva en el index y desde ali se maneja el control de errores. Next es una funcion propia de Node
+   }
+};
+
+const getOne =  async(req, res, next) =>{
+  try {
+    const id = req.params.id;  //id es la que genera mongoose
+    const characters = await Character.findById(id); //findByid se pasa por la url por el id, esto lo ponemos en mongo. No hay dos objetos en nuestra base de 
+    res.json({
+      status: 200, //un 200 es un ok
+      msg: "creado",
+      data: characters,
+    });
+  } catch (error) {
+    next(error);
+  } 
+};
+
+const getOneByName =  async(req, res, next) =>{
+  try {
+    const id = req.params.name;
+    const character = await Character.findOne({name: name}); //findOne se busca por nombre y se le pasa un objeto name: name . Solo lo utilizamos para usar datos no para el manejo 
+    res.json({
+      status: 200, //un 200 es un ok
+      msg: "creado",
+      data: characters,
+    });
+  } catch (error) {
+    next(error);
+  } 
+};
+
+const getAll =  async(req, res, next) =>{
+  try {
+    const characters = await Character.find(); //find es el metodo para buscar todos los caracters
+    res.json({
+      status: 200, //un 200 es un ok
+      msg: "creado",
+      data: characters,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+ const updateOne = async(req, res, next) =>{
+  try {
+    const id = req.params.id;
+    const body = req.body; //nos pasa los parametros que vayamos a editar
+    const character = await Character.findByIdAndUpdate(id, body,  {new: true}); //{new: true} esto son añadidos
+    res.json({
+      status: 200, //un 200 es un ok
+      msg: "creado",
+      data: characters,
+    });
+  } catch (error) {
+    next(error);
+  }
+ };
+
+ const deleteOne = async(req, res, next) =>{
+try {
+  const id = req.params.id;
+  const character = await Character.findByIdAndDelete(id);
+  res.json({
+    status: 200, //un 200 es un ok
+    msg: "creado",
+    data: characters,
+  });
+} catch (error) {
+  next(error);
+}
+ }
+
+module.exports = {create, getOne, getAll, getOneByName, updateOne, deleteOne};
+
+-------------------------------------------------------------------------------
+
+7.CHARACTER.router
+const express = require("express"); //express es una libreria que importamos a mano
+
+const characterRouter = express.Router(); //le diremos que añada las rutas de caracteres
+
+//funciones de control los controladores
+
+const {
+  create,
+  getOne,
+  getAll,
+  getOneByName,
+  updateOne,
+  deleteOne,
+} = require("./character.controller");
+
+//les definimos las rutas unicas
+characterRouter.post("/", create);
+characterRouter.get("/:id", getOne);
+characterRouter.get("", getAll);
+characterRouter.get("/:name", getOneByName);
+characterRouter.patch("/:id", updateOne); //patch es para editar, cambiar parametros dentro de ese mismo objeto. Manteniendo la id, obliga a que demos todos los datos de nuevo
+characterRouter.delete("/:id", deleteOne);
+
+module.exports = characterRouter;
+
+
+-------------------------------------------------------------------------------
+
+8. VAMOS AL INDEX Y LO importamos
+const characterRouter = require("./api/characters/characterRouter.router");
+
+Y CREAMOS LO SIGUIENTE
+
+app.use("/characters", characterRouter); //todas las rutas de characters comparten esto 
+
+
+-------------------------------------------------------------------------------
+
+9.NOS VAMOS AL ARCHIVO .ENV
+-ponemos el mongo uri que lo buscamos en Mongo y le indicamos la contraseña
+MONGO_URI=mongodb+srv://estefaniaestepa:gabriel301092@estefania.plnux76.mongodb.net/?retryWrites=true&w=majority&appName=estefania
+
+/? (AQUI PONEMOS LA BASE DE DATOS QUE QUERAMOS SI NO NOS CONECTAMOS DIRECTAMENTE A LA BASE DE DATOS TEST)
+
+
+-------------------------------------------------------------------------------
+
+10.VAMOS A MONGO Y CREASMOS UNA COLECCIÓN E INDICAMOS EN EL ARCHIVO .ENV characters
+
+-------------------------------------------------------------------------------
+
+11.MATERIAL ENLATADO, CREAMOS CARPETAS Y ARCHIVOS
+
+-crear una carpeta utils
+-dentros de ella un archivo de db.js
+
+Y EL db lo encapsulamos en una funcion
+
+const mongoose = require("mongoose");
+const connectMongo = async () => {
+  try {
+    const conn = await mongoose.connect(process.env.MONGO_URI);
+    console.log("INFO: Connetion successful to:", conn.connection.name);
+  } catch (error) {
+    console.log("ERROR: (f connectMongo) ->", error.message);
+  }
+};
+module.exports = { connectMongo };
+
+Y VOLVEMOS AL INDEX.js
+const {connectMongo} = require("./utils/db");
+
+Y LO CONECTAMOS
+connectMongo();
+
+
+Y LE DAMOS A LA TERMINAL 
+npm run dev
+
+-------------------------------------------------------------------------------
+
+12.NOS CREAMOS UN ARCHIVO chat.json PARA CREAR UN EJEMPLO
+{
+  "name": "antonio",
+  "age": 46,
+  "weight": 70,
+  "description": "varon, raza caucasica, tatuaje en la pierna\nAmigo de sus amigos\nVive en Albacete"
+}
+
+/* \n es un salto de párrafo */
+
+
