@@ -13,12 +13,14 @@ const {
   deleteOne,
 } = require("./character.controller");
 
+const {isAuth} = require("../middleware/auth.middleware");
+
 //les definimos las rutas unicas
-characterRouter.post("/", create);
+characterRouter.post("/", [isAuth], create); //[isAuth] indicamos esto a las rutas que nos interesa que estén protegidas
 characterRouter.get("/:id", getOne);
 characterRouter.get("", getAll);
 characterRouter.get("/:name", getOneByName);
-characterRouter.patch("/:id", updateOne); //patch es para editar, cambiar parametros dentro de ese mismo objeto. Manteniendo la id, obliga a que demos todos los datos de nuevo
-characterRouter.delete("/:id", deleteOne);
+characterRouter.patch("/:id", [isAuth], updateOne); //patch es para editar, cambiar parametros dentro de ese mismo objeto. Manteniendo la id, obliga a que demos todos los datos de nuevo
+characterRouter.delete("/:id",[isAuth], deleteOne);
 
 module.exports = characterRouter;

@@ -3,6 +3,7 @@ const express = require("express");
 require ('dotenv').config();
 const characterRouter = require("./api/characters/character.router");
 const {connectMongo} = require("./utils/db"); //dependiendo el tipo de conexion porque le opcion de pasar varios parametros
+const { notFoundHandler,errorHandler} = require("./api/middleware/error.middleware");
 
 /* console.log(process.env); */
 
@@ -28,8 +29,10 @@ app.get('/', (req, res)=>{  //1.la ruta del endpoint, 2.controlador
 
 app.use("/characters", characterRouter); //todas las rutas de characters comparten esto 
 
-//4. GESTION DE ERRORES O MANEJO DE EXPEPCIONES
 
+//4. GESTION DE ERRORES O MANEJO DE EXPEPCIONES
+app.use(notFoundHandler); 
+app.use(errorHandler);  //siempre va el ultimo
 
 //5.ACTIVAR (es la funcion lisen)
 
